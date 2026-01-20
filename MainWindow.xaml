@@ -1,0 +1,396 @@
+﻿<Window x:Class="TaskManager.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:TaskManager.Wpf"
+        Title="Task Manager"
+        Height="560" Width="980"
+        Background="#F6F7FB">
+
+    <Window.Resources>
+        <!-- HEADINGS -->
+        <Style x:Key="H1" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- INPUTS -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="28"/>
+        </Style>
+
+        <!-- BUTTONS -->
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Padding" Value="10,4"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#2D6CDF"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#E04848"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- LISTS -->
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="#D0D5DD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+
+        <Style x:Key="EmptyText" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.65"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- TOP BAR -->
+        <DockPanel Grid.Row="0"
+           Margin="0,0,0,10"
+           LastChildFill="False">
+
+            <TextBlock Text="Task Manager"
+               FontSize="18"
+               FontWeight="Bold"
+               VerticalAlignment="Center"
+               DockPanel.Dock="Left"/>
+
+            <TextBlock x:Name="CurrentUserText"
+               DockPanel.Dock="Right"
+               VerticalAlignment="Center"
+               Margin="0,0,12,0"
+               Opacity="0.7"/>
+
+            <Button Content="Logout"
+            Click="Logout_Click"
+            DockPanel.Dock="Right"
+            Width="120"
+            Height="30"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Padding="10,4"
+            Margin="0"/>
+        </DockPanel>
+
+
+        <!-- TABS -->
+        <TabControl x:Name="MainTabs" Grid.Row="1">
+            <!-- TAB 1: TASKS -->
+            <TabItem Header="Tasks">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LINKS: CATEGORIES -->
+                    <Border Grid.Column="0" Margin="0,0,10,0"
+                            Background="White" BorderBrush="#D0D5DD" BorderThickness="1" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Categories" Style="{StaticResource H1}"/>
+
+                            <ListBox x:Name="CategoryList"
+                                     Height="220"
+                                     DisplayMemberPath="Name"
+                                     SelectionChanged="CategoryList_SelectionChanged"/>
+
+                            <!-- ADD CATEGORY -->
+                            <TextBlock Text="New category name" Style="{StaticResource Label}"/>
+                            <TextBox x:Name="NewCategoryBox"
+                                     ToolTip="Naam voor nieuwe categorie"/>
+
+                            <!-- RENAME CATEGORY -->
+                            <TextBlock Text="Rename selected category" Style="{StaticResource Label}" Margin="0,8,0,0"/>
+                            <TextBox x:Name="RenameCategoryBox"
+                                     ToolTip="Nieuwe naam voor geselecteerde categorie"/>
+
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button x:Name="AddCategoryButton"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Content="Add Category"
+                                        Click="AddCategory_Click"/>
+
+                                <Button x:Name="RenameCategoryButton"
+                                        Content="Rename"
+                                        Click="RenameCategory_Click"/>
+
+                                <Button x:Name="DeleteCategoryButton"
+                                        Style="{StaticResource DangerButton}"
+                                        Content="Delete Category"
+                                        Margin="0"
+                                        Click="DeleteCategory_Click"/>
+                            </StackPanel>
+
+
+                            <Separator Margin="0,15,0,10"/>
+
+                            <TextBlock Text="Task Filter" Style="{StaticResource Label}"/>
+                            <ComboBox x:Name="StatusFilterBox"
+                                      SelectionChanged="StatusFilterBox_SelectionChanged">
+                                <ComboBoxItem Content="All" IsSelected="True"/>
+                                <ComboBoxItem Content="Open"/>
+                                <ComboBoxItem Content="Completed"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RECHTS: TASKS -->
+                    <Border Grid.Column="1"
+                            Background="White" BorderBrush="#D0D5DD" BorderThickness="1" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Tasks" Style="{StaticResource H1}"/>
+
+                            <TextBlock x:Name="TasksEmptyText"
+                                       Style="{StaticResource EmptyText}"
+                                       Text="Geen taken voor deze categorie/filter."/>
+
+                            <ListBox x:Name="TaskList" Height="240"
+                                     SelectionChanged="TaskList_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}"
+                                                  Checked="TaskCompleted_Changed"
+                                                  Unchecked="TaskCompleted_Changed"
+                                                  PreviewMouseDown="TaskCheckBox_PreviewMouseDown"
+                                                  Padding="4">
+                                            <CheckBox.Content>
+                                                <local:TaskCardControl/>
+                                            </CheckBox.Content>
+
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <TextBox x:Name="TaskTitleBox" />
+                            <TextBox x:Name="TaskDescBox" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button x:Name="AddTaskButton"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Content="Add Task"
+                                        Click="AddTask_Click"/>
+
+                                <Button x:Name="SaveTaskButton"
+                                        Content="Save Changes"
+                                        IsEnabled="False"
+                                        Click="SaveTask_Click"/>
+
+                                <Button x:Name="CancelEditButton"
+                                        Content="Cancel"
+                                        Margin="0"
+                                        IsEnabled="False"
+                                        Click="CancelEdit_Click"/>
+                            </StackPanel>
+
+                            <Button x:Name="DeleteTaskButton"
+                                    Style="{StaticResource DangerButton}"
+                                    Content="Delete Task"
+                                    Margin="0,10,0,0"
+                                    Click="DeleteTask_Click"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: AGENDA -->
+            <TabItem Header="Agenda">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LINKS: geplande items -->
+                    <Border Grid.Column="0" Margin="0,0,10,0"
+                            Background="White" BorderBrush="#D0D5DD" BorderThickness="1" Padding="10">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Agenda" Style="{StaticResource H1}"/>
+
+                                <TextBlock Text="Planned items for selected date" Style="{StaticResource Label}"/>
+
+                                <TextBlock x:Name="AgendaEmptyText"
+                                       Style="{StaticResource EmptyText}"
+                                       Text="Geen geplande items voor deze datum."/>
+
+                                <ListBox x:Name="AgendaList" Height="350"
+                                     SelectionChanged="AgendaList_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,4,0,4">
+                                                <TextBlock Text="{Binding TaskTitle}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding TaskDescription}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <Button x:Name="DeleteAgendaButton"
+                                    Style="{StaticResource DangerButton}"
+                                    Content="Delete selected agenda item"
+                                    Margin="0,10,0,0"
+                                    Click="DeleteAgendaItem_Click"/>
+                                <Separator Margin="0,12,0,12"/>
+
+                                <TextBlock Text="Reschedule selected item" Style="{StaticResource Label}"/>
+
+                                <DatePicker x:Name="RescheduleDatePicker"
+                                            Height="28"
+                                            SelectedDateChanged="RescheduleDatePicker_SelectedDateChanged"/>
+
+
+                                <Button x:Name="RescheduleAgendaButton"
+                                    Content="Reschedule"
+                                    Margin="0,10,0,0"
+                                    Click="RescheduleAgendaItem_Click"/>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- RECHTS: datum + plannen -->
+                    <Border Grid.Column="1"
+                            Background="White" BorderBrush="#D0D5DD" BorderThickness="1" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Select date" Style="{StaticResource Label}"/>
+                            <DatePicker x:Name="AgendaDatePicker"
+                                        SelectedDateChanged="AgendaDatePicker_SelectedDateChanged"
+                                        Height="28"/>
+
+                            <Button x:Name="PlanTaskButton"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Content="Plan selected task on this date"
+                                    Margin="0,10,0,10"
+                                    Click="PlanTask_Click"/>
+
+                            <TextBlock Text="Tip" Style="{StaticResource Label}" Margin="0,10,0,0"/>
+                            <TextBlock Text="Ga naar de Tasks-tab, selecteer een task, en kom terug om te plannen."
+                                       Opacity="0.7"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Extra tabs zichtbaar op basis van rol -->
+            <TabItem x:Name="KpiTab" Header="KPI's" Visibility="Collapsed">
+                <Grid Margin="10">
+                    <Border Background="White"
+                BorderBrush="#D0D5DD"
+                BorderThickness="1"
+                Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="Mijn KPI's" Style="{StaticResource H1}"/>
+
+                            <TextBlock x:Name="KpiTotalTasksText" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="KpiOpenTasksText" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="KpiCompletedTasksText" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="KpiAgendaTodayText" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="KpiAgendaNext7DaysText" Margin="0,0,0,6"/>
+
+                            <Separator Margin="0,12,0,12"/>
+
+                            <TextBlock x:Name="KpiEmptyHint"
+                           Visibility="Collapsed"
+                           Opacity="0.7"
+                           TextWrapping="Wrap"
+                           Text="Nog geen data? Maak een taak aan in de Tasks-tab en plan ze in de Agenda-tab."/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB: ADMIN (alleen admin) -->
+            <TabItem x:Name="AdminTab" Header="Admin" Visibility="Collapsed">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LINKS: users -->
+                    <Border Grid.Column="0"
+                Background="White"
+                BorderBrush="#D0D5DD"
+                BorderThickness="1"
+                Padding="12"
+                Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="User management" Style="{StaticResource H1}"/>
+
+                            <TextBlock Text="Selecteer een user" Style="{StaticResource Label}"/>
+                            <ListBox x:Name="AdminUserList"
+                         DisplayMemberPath="Email"
+                         Height="360"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- RECHTS: acties -->
+                    <Border Grid.Column="1"
+                Background="White"
+                BorderBrush="#D0D5DD"
+                BorderThickness="1"
+                Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="Acties" Style="{StaticResource H1}"/>
+
+                            <Button Content="Make Admin"
+                        Click="MakeAdmin_Click"
+                        Margin="0,0,0,10"/>
+
+                            <Button Content="Make PowerUser"
+                        Click="MakePowerUser_Click"
+                        Margin="0,0,0,10"/>
+
+                            <Button Content="Make User"
+                        Click="MakeUser_Click"
+                        Margin="0,0,0,10"/>
+
+                            <Separator Margin="0,10"/>
+
+                            <Button Content="Block user"
+                        Click="BlockUser_Click"
+                        Margin="0,0,0,10"/>
+
+                            <Button Content="Unblock user"
+                        Click="UnblockUser_Click"
+                        Margin="0,0,0,10"/>
+
+                            <Button Content="Delete user"
+                        Style="{StaticResource DangerButton}"
+                        Click="DeleteUser_Click"
+                        Margin="0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
