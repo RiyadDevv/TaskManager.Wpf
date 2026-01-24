@@ -25,6 +25,18 @@ namespace TaskManager.Wpf
                 MessageBox.Show("Vul email en password in.");
                 return;
             }
+            // PRE-CHECK: bestaat deze email al?
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                MessageBox.Show(
+                    "Dit e-mailadres is al in gebruik. Probeer in te loggen of gebruik een ander e-mailadres.",
+                    "Registratie mislukt",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
+                return;
+            }
 
             var user = new ApplicationUser
             {
@@ -40,10 +52,31 @@ namespace TaskManager.Wpf
 
             if (!result.Succeeded)
             {
-                var msg = string.Join("\n", result.Errors.Select(e2 => $"- {e2.Code}: {e2.Description}"));
-                MessageBox.Show(msg);
+                // 1) vriendelijke melding als email/username al bestaat
+                if (result.Errors.Any(e =>
+                    e.Code == "DuplicateEmail" || e.Code == "DuplicateUserName"))
+                {
+                    MessageBox.Show(
+                        "Dit e-mailadres is al in gebruik. Probeer in te loggen of gebruik een ander e-mailadres.",
+                        "Registratie mislukt",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning
+                    );
+                    return;
+                }
+
+                // 2) andere fouten; enkel descriptions ipv geen technische code
+                var msg = string.Join("\n", result.Errors.Select(e => $"- {e.Description}"));
+
+                MessageBox.Show(
+                    msg,
+                    "Registratie mislukt",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
+
 
             // nieuwe users worden standaard "User"
             await _userManager.AddToRoleAsync(user, "User");
@@ -66,13 +99,11 @@ namespace TaskManager.Wpf
         {
             var email = (EmailBox.Text ?? "").Trim();
             var password = PasswordBox.Password ?? "";
-
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 MessageBox.Show("Vul email en password in.");
                 return;
             }
-
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null)
             {
