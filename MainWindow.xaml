@@ -187,7 +187,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-
+                            <!-- Labels -->
                             <TextBlock Text="Task title" Style="{StaticResource Label}" Margin="0,10,0,0"/>
                             <TextBox x:Name="TaskTitleBox"
                                      ToolTip="Titel van de taak (verplicht)"/>
