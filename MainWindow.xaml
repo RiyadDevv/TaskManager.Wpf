@@ -116,8 +116,14 @@
 
                             <ListBox x:Name="CategoryList"
                                      Height="220"
-                                     DisplayMemberPath="Name"
-                                     SelectionChanged="CategoryList_SelectionChanged"/>
+                                     SelectionChanged="CategoryList_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
 
                             <!-- ADD CATEGORY -->
                             <TextBlock Text="New category name" Style="{StaticResource Label}"/>
@@ -357,8 +363,14 @@
 
                             <TextBlock Text="Selecteer een user" Style="{StaticResource Label}"/>
                             <ListBox x:Name="AdminUserList"
-                         DisplayMemberPath="Email"
-                         Height="360"/>
+                                    Height="360">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Email}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
                         </StackPanel>
                     </Border>
 
